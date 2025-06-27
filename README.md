@@ -5,13 +5,13 @@ Core GitHub API connector with authentication, built on Saloon HTTP client.
 ## Installation
 
 ```bash
-composer require jordanpartridge/github-connector
+composer require conduit-ui/github-connector
 ```
 
 ## Usage
 
 ```php
-use JordanPartridge\GitHubConnector\GithubConnector;
+use ConduitUi\GitHubConnector\GithubConnector;
 
 $connector = new GithubConnector('your-token');
 

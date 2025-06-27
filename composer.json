@@ -22,7 +22,7 @@
   },
   "require-dev": {
     "laravel/pint": "^1.14",
-    "larastan/larastan": "^2.0",
+    "phpstan/phpstan": "^1.10",
     "nunomaduro/collision": "^7.0||^8.0",
     "pestphp/pest": "^2.34||^3.0",
     "pestphp/pest-plugin-arch": "^2.7||^3.0",
@@ -37,7 +37,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "ConduitUi\\GitHubConnector\\": "tests/"
+      "ConduitUi\\GitHubConnector\\Tests\\": "tests/"
     }
   },
   "scripts": {
