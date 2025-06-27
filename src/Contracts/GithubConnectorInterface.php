@@ -1,10 +1,16 @@
 <?php
 
-namespace JordanPartridge\GitHubConnector\Contracts;
+namespace ConduitUi\GitHubConnector\Contracts;
 
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
+/**
+ * Contract for GitHub API connector implementations.
+ *
+ * This interface defines the standard methods that any GitHub connector
+ * implementation must provide for interacting with the GitHub API.
+ */
 interface GithubConnectorInterface
 {
     /**
