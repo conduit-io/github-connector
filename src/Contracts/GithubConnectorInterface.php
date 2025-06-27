@@ -1,6 +1,6 @@
 <?php
 
-namespace JordanPartridge\GitHubConnector\Contracts;
+namespace ConduitUi\GitHubConnector\Contracts;
 
 use Saloon\Http\Request;
 use Saloon\Http\Response;

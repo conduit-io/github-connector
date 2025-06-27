@@ -1,6 +1,6 @@
 <?php
 
-namespace JordanPartridge\GitHubConnector\Exceptions;
+namespace ConduitUi\GitHubConnector\Exceptions;
 
 use Exception;
 

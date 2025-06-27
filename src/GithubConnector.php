@@ -1,8 +1,8 @@
 <?php
 
-namespace JordanPartridge\GitHubConnector;
+namespace ConduitUi\GitHubConnector;
 
-use JordanPartridge\GitHubConnector\Contracts\GithubConnectorInterface;
+use ConduitUi\GitHubConnector\Contracts\GithubConnectorInterface;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\AcceptsJson;
