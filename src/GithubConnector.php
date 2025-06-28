@@ -91,7 +91,8 @@ class GithubConnector extends Connector implements GithubConnectorInterface
         $headers = $response->headers();
 
         // Check if this is a rate limit issue
-        if ($headers->get('X-RateLimit-Remaining') === '0') {
+        $rateLimitRemaining = $headers->get('X-RateLimit-Remaining');
+        if ($rateLimitRemaining !== null && (int) $rateLimitRemaining === 0) {
             return new GitHubRateLimitException('GitHub API rate limit exceeded', $response);
         }
 
