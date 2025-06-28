@@ -4,13 +4,11 @@ namespace ConduitUi\GitHubConnector;
 
 use ConduitUi\GitHubConnector\Contracts\GithubConnectorInterface;
 use ConduitUi\GitHubConnector\Exceptions\GithubAuthException;
-use ConduitUi\GitHubConnector\Exceptions\GitHubException;
 use ConduitUi\GitHubConnector\Exceptions\GitHubForbiddenException;
 use ConduitUi\GitHubConnector\Exceptions\GitHubRateLimitException;
 use ConduitUi\GitHubConnector\Exceptions\GitHubResourceNotFoundException;
 use ConduitUi\GitHubConnector\Exceptions\GitHubServerException;
 use ConduitUi\GitHubConnector\Exceptions\GitHubValidationException;
-use Exception;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
@@ -65,7 +63,7 @@ class GithubConnector extends Connector implements GithubConnectorInterface
     /**
      * Handle GitHub-specific exceptions based on response status.
      */
-    public function getRequestException(Response $response): ?Exception
+    public function getRequestException(Response $response, ?\Throwable $senderException = null): ?\Throwable
     {
         return match ($response->status()) {
             401 => new GithubAuthException('GitHub authentication failed', $response),
@@ -73,14 +71,14 @@ class GithubConnector extends Connector implements GithubConnectorInterface
             404 => new GitHubResourceNotFoundException('GitHub resource not found', $response),
             422 => new GitHubValidationException('GitHub API validation failed', $response),
             500, 502, 503, 504 => new GitHubServerException('GitHub API server error', $response, $response->status()),
-            default => parent::getRequestException($response),
+            default => parent::getRequestException($response, $senderException),
         };
     }
 
     /**
      * Handle 403 responses which could be rate limiting or permissions.
      */
-    protected function handleForbiddenResponse(Response $response): GitHubException
+    protected function handleForbiddenResponse(Response $response): ?\Throwable
     {
         $headers = $response->headers();
 
