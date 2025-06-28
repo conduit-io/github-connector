@@ -19,7 +19,7 @@ class GithubConnector extends Connector implements GithubConnectorInterface
     /**
      * Create a new GitHub connector instance.
      *
-     * @param string|null $token GitHub personal access token
+     * @param  string|null  $token  GitHub personal access token
      */
     public function __construct(?string $token = null)
     {
