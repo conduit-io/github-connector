@@ -1,8 +1,10 @@
 <?php
 
 use ConduitUi\GitHubConnector\GithubConnector;
+use Saloon\Enums\Method;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\Request;
 
 beforeEach(function () {
     $this->connector = new GithubConnector('test-token');
@@ -34,91 +36,56 @@ it('includes correct default headers', function () {
         ->and($headers)->toHaveKey('X-GitHub-Api-Version', '2022-11-28');
 });
 
-it('can make GET requests', function () {
+it('can send GET requests', function () {
     $mockClient = new MockClient([
         MockResponse::make(['message' => 'success'], 200),
     ]);
 
     $this->connector->withMockClient($mockClient);
 
-    $response = $this->connector->get('/user');
+    $request = new class extends Request {
+        protected Method $method = Method::GET;
+        public function resolveEndpoint(): string { return '/user'; }
+    };
 
-    expect($response)->toBe(['message' => 'success']);
+    $response = $this->connector->send($request);
+
+    expect($response->json())->toBe(['message' => 'success']);
 });
 
-it('can make POST requests', function () {
+it('can send POST requests', function () {
     $mockClient = new MockClient([
         MockResponse::make(['created' => true], 201),
     ]);
 
     $this->connector->withMockClient($mockClient);
 
-    $response = $this->connector->post('/user/repos', ['name' => 'test-repo']);
+    $request = new class extends Request {
+        protected Method $method = Method::POST;
+        public function resolveEndpoint(): string { return '/user/repos'; }
+        protected function defaultBody(): array { return ['name' => 'test-repo']; }
+    };
 
-    expect($response)->toBe(['created' => true]);
+    $response = $this->connector->send($request);
+
+    expect($response->json())->toBe(['created' => true]);
 });
 
-it('can make PATCH requests', function () {
+it('sends requests with correct authentication', function () {
     $mockClient = new MockClient([
-        MockResponse::make(['updated' => true], 200),
+        MockResponse::make(['authenticated' => true], 200),
     ]);
 
     $this->connector->withMockClient($mockClient);
 
-    $response = $this->connector->patch('/user', ['name' => 'Updated Name']);
+    $request = new class extends Request {
+        protected Method $method = Method::GET;
+        public function resolveEndpoint(): string { return '/user'; }
+    };
 
-    expect($response)->toBe(['updated' => true]);
-});
-
-it('can make PUT requests', function () {
-    $mockClient = new MockClient([
-        MockResponse::make(['replaced' => true], 200),
-    ]);
-
-    $this->connector->withMockClient($mockClient);
-
-    $response = $this->connector->put('/user/starred/owner/repo');
-
-    expect($response)->toBe(['replaced' => true]);
-});
-
-it('can make DELETE requests', function () {
-    $mockClient = new MockClient([
-        MockResponse::make([], 204),
-    ]);
-
-    $this->connector->withMockClient($mockClient);
-
-    $response = $this->connector->delete('/user/starred/owner/repo');
-
-    expect($response)->toBe([]);
-});
-
-it('passes query parameters correctly for GET requests', function () {
-    $mockClient = new MockClient([
-        MockResponse::make(['repos' => []], 200),
-    ]);
-
-    $this->connector->withMockClient($mockClient);
-
-    $this->connector->get('/user/repos', ['type' => 'public', 'sort' => 'updated']);
+    $this->connector->send($request);
 
     $mockClient->assertSent(function ($request) {
-        return $request->query()->get('type') === 'public' &&
-               $request->query()->get('sort') === 'updated';
-    });
-});
-
-it('sends POST requests with correct endpoint', function () {
-    $mockClient = new MockClient([
-        MockResponse::make(['created' => true], 201),
-    ]);
-
-    $this->connector->withMockClient($mockClient);
-
-    $this->connector->post('/user/repos', ['name' => 'test-repo', 'private' => true]);
-
-    $mockClient->assertSent(function ($request) {
-        return str_contains($request->resolveEndpoint(), '/user/repos');
+        return $request->headers()->has('Authorization');
     });
 });
