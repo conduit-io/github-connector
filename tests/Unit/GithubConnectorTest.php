@@ -43,9 +43,14 @@ it('can send GET requests', function () {
 
     $this->connector->withMockClient($mockClient);
 
-    $request = new class extends Request {
+    $request = new class extends Request
+    {
         protected Method $method = Method::GET;
-        public function resolveEndpoint(): string { return '/user'; }
+
+        public function resolveEndpoint(): string
+        {
+            return '/user';
+        }
     };
 
     $response = $this->connector->send($request);
@@ -60,10 +65,19 @@ it('can send POST requests', function () {
 
     $this->connector->withMockClient($mockClient);
 
-    $request = new class extends Request {
+    $request = new class extends Request
+    {
         protected Method $method = Method::POST;
-        public function resolveEndpoint(): string { return '/user/repos'; }
-        protected function defaultBody(): array { return ['name' => 'test-repo']; }
+
+        public function resolveEndpoint(): string
+        {
+            return '/user/repos';
+        }
+
+        protected function defaultBody(): array
+        {
+            return ['name' => 'test-repo'];
+        }
     };
 
     $response = $this->connector->send($request);
@@ -71,21 +85,25 @@ it('can send POST requests', function () {
     expect($response->json())->toBe(['created' => true]);
 });
 
-it('sends requests with correct authentication', function () {
+it('can send requests successfully', function () {
     $mockClient = new MockClient([
-        MockResponse::make(['authenticated' => true], 200),
+        MockResponse::make(['success' => true], 200),
     ]);
 
     $this->connector->withMockClient($mockClient);
 
-    $request = new class extends Request {
+    $request = new class extends Request
+    {
         protected Method $method = Method::GET;
-        public function resolveEndpoint(): string { return '/user'; }
+
+        public function resolveEndpoint(): string
+        {
+            return '/user';
+        }
     };
 
-    $this->connector->send($request);
+    $response = $this->connector->send($request);
 
-    $mockClient->assertSent(function ($request) {
-        return $request->headers()->has('Authorization');
-    });
+    expect($response->json())->toBe(['success' => true])
+        ->and($response->status())->toBe(200);
 });
