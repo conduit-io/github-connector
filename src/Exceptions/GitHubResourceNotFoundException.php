@@ -3,20 +3,20 @@
 namespace ConduitUi\GitHubConnector\Exceptions;
 
 /**
- * Exception thrown when GitHub authentication fails.
+ * Exception thrown when a GitHub resource is not found.
  */
-class GithubAuthException extends GitHubException
+class GitHubResourceNotFoundException extends GitHubException
 {
     public function __construct(
-        string $message = 'GitHub authentication failed',
+        string $message = 'GitHub resource not found',
         $response = null,
-        int $code = 401,
+        int $code = 404,
         ?\Exception $previous = null
     ) {
         parent::__construct($message, $response, $code, $previous);
 
         $this->setRecoverySuggestion(
-            'Check your GitHub token is valid and has the required permissions.'
+            'Check that the repository, user, or resource exists and you have access to it.'
         );
     }
 }
