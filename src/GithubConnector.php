@@ -3,8 +3,17 @@
 namespace ConduitUi\GitHubConnector;
 
 use ConduitUi\GitHubConnector\Contracts\GithubConnectorInterface;
+use ConduitUi\GitHubConnector\Exceptions\GithubAuthException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubForbiddenException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubRateLimitException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubResourceNotFoundException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubServerException;
+use ConduitUi\GitHubConnector\Exceptions\GitHubValidationException;
+use Exception;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
+use Saloon\Http\Response;
 use Saloon\Traits\Plugins\AcceptsJson;
 
 /**
@@ -51,5 +60,35 @@ class GithubConnector extends Connector implements GithubConnectorInterface
             'Accept' => 'application/vnd.github.v3+json',
             'X-GitHub-Api-Version' => '2022-11-28',
         ];
+    }
+
+    /**
+     * Handle GitHub-specific exceptions based on response status.
+     */
+    public function getRequestException(Response $response): ?Exception
+    {
+        return match ($response->status()) {
+            401 => new GithubAuthException('GitHub authentication failed', $response),
+            403 => $this->handleForbiddenResponse($response),
+            404 => new GitHubResourceNotFoundException('GitHub resource not found', $response),
+            422 => new GitHubValidationException('GitHub API validation failed', $response),
+            500, 502, 503, 504 => new GitHubServerException('GitHub API server error', $response, $response->status()),
+            default => parent::getRequestException($response),
+        };
+    }
+
+    /**
+     * Handle 403 responses which could be rate limiting or permissions.
+     */
+    protected function handleForbiddenResponse(Response $response): GitHubException
+    {
+        $headers = $response->headers();
+
+        // Check if this is a rate limit issue
+        if ($headers->get('X-RateLimit-Remaining') === '0') {
+            return new GitHubRateLimitException('GitHub API rate limit exceeded', $response);
+        }
+
+        return new GitHubForbiddenException('Access to GitHub resource is forbidden', $response);
     }
 }
